@@ -1,9 +1,11 @@
-#lab 1 raycaster, basado en el código de Carlos Alonso por haberlo hecho durante la clase
+#Proyecto 3 raycaster, basado en el código de Carlos Alonso por haberlo hecho durante la clase
 #José Hurtarte 19707
 import pygame
-from math import cos, pi, sin, tan
+from math import cos, pi, sin, tan, atan2
 
 RAY_AMOUNT = 100
+
+SPRITE_BACKGROUND = (152, 0, 136, 255)
 
 wallcolors = {
     '1': pygame.Color('red'),
@@ -20,6 +22,20 @@ wallTextures = {
     '4': pygame.image.load('MARBFAC2.png'),
     '5': pygame.image.load('MARBFACE.png')
     }
+
+enemies = [{"x" : 100,
+            "y" : 200,
+            "sprite" : pygame.image.load('sprite1.png')},
+
+           {"x" : 350,
+            "y" : 150,
+            "sprite" : pygame.image.load('sprite2.png')},
+
+            {"x" : 300,
+             "y" : 400,
+             "sprite" : pygame.image.load('sprite3.png')}
+
+    ]
 
 class Background(pygame.sprite.Sprite):
     def __init__(self, image_file, location, size):
@@ -39,7 +55,7 @@ class Raycaster(object):
         #La info del mapa como una lista
         self.map = []
         # Para determinar la cantidad de pixeles que ocuparia en el mapa en un lado 
-
+        self.zbuffer = [float('inf') for z in range(int(self.width / 2))]
         #Tamaño del bloque
         self.blocksize =50
         self.wallheight = 50
@@ -52,9 +68,9 @@ class Raycaster(object):
 
         self.player = {
             'x': 100,
-            'y': 175,
+            'y': 100,
             'fov': 60,
-            'angle': 180
+            'angle': 0
             
         }
 
@@ -72,9 +88,45 @@ class Raycaster(object):
         self.screen.blit(tex, rect)
 
 
-    def drawPlayerIcon(self, color):
-        rect = (self.player['x']-2, self.player['y']-2, 5,5)
-        self.screen.fill(color, rect)
+    def drawIcons(self):
+        if self.player['x'] < self.width / 2:
+            rect = (self.player['x'] - 2, self.player['y'] - 2, 5,5)
+            self.screen.fill(pygame.Color('black'), rect )
+
+        for enemy in enemies:
+            rect = (enemy['x'] - 2, enemy['y'] - 2, 5,5)
+            self.screen.fill(pygame.Color('red'), rect )
+
+    def drawSprite(self, obj, size):
+        # Pitagoras
+        spriteDist = ((self.player['x'] - obj['x']) ** 2 + (self.player['y'] - obj['y']) ** 2) ** 0.5
+
+        # Angulo
+        spriteAngle = atan2(obj['y'] - self.player['y'], obj['x'] - self.player['x']) * 180 / pi
+
+        #Tamaño del sprite
+        aspectRatio = obj['sprite'].get_width() / obj['sprite'].get_height()
+        spriteHeight = (self.height / spriteDist) * size
+        spriteWidth = spriteHeight * aspectRatio
+
+        # Buscar el punto inicial para dibujar el sprite
+        angleDif = (spriteAngle - self.player['angle']) % 360
+        angleDif = (angleDif - 360) if angleDif > 180 else angleDif
+        startX = angleDif * (self.width / 2) / self.player['fov'] 
+        startX += (self.width * 3/4) - (spriteWidth  / 2)
+        startY = (self.height /  2) - (spriteHeight / 2)
+        startX = int(startX)
+        startY = int(startY)
+
+        for x in range(startX, startX + int(spriteWidth)):
+            if (self.width / 2 < x < self.width) and self.zbuffer[x - int(self.width / 2)] >= spriteDist:
+                for y in range(startY, startY + int(spriteHeight)):
+                    tx = int((x - startX) * obj['sprite'].get_width() / spriteWidth )
+                    ty = int((y - startY) * obj['sprite'].get_height() / spriteHeight )
+                    texColor = obj['sprite'].get_at((tx, ty))
+                    if texColor != SPRITE_BACKGROUND and texColor[3] > 128:
+                        self.screen.set_at((x,y), texColor)
+                        self.zbuffer[x - int(self.width / 2)] = spriteDist
 
     def castRay(self, angle):
         rads = angle*pi/180
@@ -148,7 +200,7 @@ class Raycaster(object):
                         if self.map[j][i] != ' ':
                             self.drawBlock(x,y, self.map[j][i])
 
-        self.drawPlayerIcon(pygame.Color('black'))
+        self.drawIcons()
 
         #Generacio de rayos
         for column in range(RAY_AMOUNT):
@@ -156,6 +208,9 @@ class Raycaster(object):
             dist, id, tx = self.castRay(angle)
 
             rayWidth = int(( 1 / RAY_AMOUNT) * halfWidth)
+
+            for i in range(rayWidth):
+                self.zbuffer[column * rayWidth + i] = dist
 
             startX = halfWidth + int(( (column / RAY_AMOUNT) * halfWidth))
 
@@ -177,7 +232,10 @@ class Raycaster(object):
             
 
 
+        for enemy in enemies:
+            self.drawSprite(enemy, 50)
 
+        
         # Columna divisora
         for i in range(self.height):
             self.screen.set_at( (halfWidth, i), pygame.Color('black'))
