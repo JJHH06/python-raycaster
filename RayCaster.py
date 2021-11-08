@@ -55,7 +55,7 @@ class Raycaster(object):
         #La info del mapa como una lista
         self.map = []
         # Para determinar la cantidad de pixeles que ocuparia en el mapa en un lado 
-        self.zbuffer = [float('inf') for z in range(int(self.width / 2))]
+        self.zbuffer = [float('inf') for z in range(self.width)]
         #Tamaño del bloque
         self.blocksize =50
         self.wallheight = 50
@@ -73,6 +73,7 @@ class Raycaster(object):
             'angle': 0
             
         }
+        self.hitEnemy = False
 
     #Para cargar el mapa con el .txt
     def load_map(self, filename):
@@ -80,22 +81,39 @@ class Raycaster(object):
             for line in file.readlines():
                 self.map.append( list(line.rstrip()) )
 
-    def drawBlock(self, x, y, id):
-        tex = wallTextures[id]
-        tex = pygame.transform.scale(tex, (self.blocksize, self.blocksize) )
-        rect = tex.get_rect()
-        rect = rect.move((x,y))
-        self.screen.blit(tex, rect)
+    def drawMinimap(self):
+        minimapWidth = 100
+        minimapHeight = 100
+        minimapSurface = pygame.Surface( (500, 500 ) )
+        minimapSurface.fill(pygame.Color("gray"))
+        
+        minimapSurface = pygame.Surface( (500, 500 ) )
+        minimapSurface.fill(pygame.Color("gray"))
 
+        for x in range(0, 500, self.blocksize):
+            for y in range(0, 500, self.blocksize):
 
-    def drawIcons(self):
-        if self.player['x'] < self.width / 2:
-            rect = (self.player['x'] - 2, self.player['y'] - 2, 5,5)
-            self.screen.fill(pygame.Color('black'), rect )
+                i = int(x/self.blocksize)
+                j = int(y/self.blocksize)
+
+                if j < len(self.map):
+                    if i < len(self.map[j]):
+                        if self.map[j][i] != ' ':
+                            tex = wallTextures[self.map[j][i]]
+                            tex = pygame.transform.scale(tex, (self.blocksize, self.blocksize) )
+                            rect = tex.get_rect()
+                            rect = rect.move((x,y))
+                            minimapSurface.blit(tex, rect)
+
+        rect = (int(self.player['x'] - 4), int(self.player['y']) - 4, 10,10)
+        minimapSurface.fill(pygame.Color('black'), rect )
 
         for enemy in enemies:
-            rect = (enemy['x'] - 2, enemy['y'] - 2, 5,5)
-            self.screen.fill(pygame.Color('red'), rect )
+            rect = (enemy['x'] - 4, enemy['y'] - 4, 10,10)
+            minimapSurface.fill(pygame.Color('red'), rect )
+
+        minimapSurface = pygame.transform.scale(minimapSurface, (minimapWidth,minimapHeight) )
+        self.screen.blit(minimapSurface, (self.width - minimapWidth,self.height - minimapHeight))
 
     def drawSprite(self, obj, size):
         # Pitagoras
@@ -112,21 +130,24 @@ class Raycaster(object):
         # Buscar el punto inicial para dibujar el sprite
         angleDif = (spriteAngle - self.player['angle']) % 360
         angleDif = (angleDif - 360) if angleDif > 180 else angleDif
-        startX = angleDif * (self.width / 2) / self.player['fov'] 
-        startX += (self.width * 3/4) - (spriteWidth  / 2)
+        startX = angleDif * self.width / self.player['fov'] 
+        startX += (self.width /  2) - (spriteWidth  / 2)
         startY = (self.height /  2) - (spriteHeight / 2)
         startX = int(startX)
         startY = int(startY)
 
         for x in range(startX, startX + int(spriteWidth)):
-            if (self.width / 2 < x < self.width) and self.zbuffer[x - int(self.width / 2)] >= spriteDist:
+            if (0 < x < self.width) and self.zbuffer[x] >= spriteDist:
                 for y in range(startY, startY + int(spriteHeight)):
                     tx = int((x - startX) * obj['sprite'].get_width() / spriteWidth )
                     ty = int((y - startY) * obj['sprite'].get_height() / spriteHeight )
                     texColor = obj['sprite'].get_at((tx, ty))
                     if texColor != SPRITE_BACKGROUND and texColor[3] > 128:
                         self.screen.set_at((x,y), texColor)
-                        self.zbuffer[x - int(self.width / 2)] = spriteDist
+                        if y == self.height / 2:
+                            self.zbuffer[x] = spriteDist
+                            if x == self.width / 2:
+                                self.hitEnemy = True
 
     def castRay(self, angle):
         rads = angle*pi/180
@@ -171,7 +192,6 @@ class Raycaster(object):
 
                         tx = hit / self.blocksize
 
-                        pygame.draw.line(self.screen,pygame.Color('white'), playerPos, (x,y))
                         return dist, self.map[j][i], tx
 
                         
@@ -182,37 +202,21 @@ class Raycaster(object):
 
     def render(self):
 
-        halfWidth = int(self.width/2)
         halfHeight = int(self.height/2)
 
-        # Para las coordenadas de la pantalla, se empieza desde esquina superior izquierda
-        for x in range(0, halfWidth, self.blocksize):
-            #Para que vaya saltandose el size del bloque
-            for y in range(0, self.height, self.blocksize):
-                #Vamos revisando, dependiendo del paso que vamos
-
-                i = int(x/self.blocksize)
-                j = int(y/self.blocksize)
-
-                #Para accesar al valor del mapa en esa posicion
-                if j < len(self.map):
-                    if i < len(self.map[j]):
-                        if self.map[j][i] != ' ':
-                            self.drawBlock(x,y, self.map[j][i])
-
-        self.drawIcons()
+        
 
         #Generacio de rayos
         for column in range(RAY_AMOUNT):
             angle = self.player['angle'] + (-(self.player['fov']/2)) + (self.player['fov']*column/RAY_AMOUNT)
             dist, id, tx = self.castRay(angle)
 
-            rayWidth = int(( 1 / RAY_AMOUNT) * halfWidth)
+            rayWidth = int(( 1 / RAY_AMOUNT) * self.width)
 
             for i in range(rayWidth):
                 self.zbuffer[column * rayWidth + i] = dist
 
-            startX = halfWidth + int(( (column / RAY_AMOUNT) * halfWidth))
+            startX = int(( (column / RAY_AMOUNT) * self.width))
 
             # perceivedHeight = screenHeight / (distance * cos( rayAngle - viewAngle)) * wallHeight
             h = self.height / (dist * cos( (angle - self.player["angle"]) * pi / 180)) * self.wallheight
@@ -231,28 +235,25 @@ class Raycaster(object):
             
             
 
-
+        self.hitEnemy = False
         for enemy in enemies:
             self.drawSprite(enemy, 50)
 
         
         # Columna divisora
-        for i in range(self.height):
-            self.screen.set_at( (halfWidth, i), pygame.Color('black'))
-            self.screen.set_at( (halfWidth+1, i), pygame.Color('black'))
-            self.screen.set_at( (halfWidth-1, i), pygame.Color('black'))
+        sightRect = (int(self.width / 2 - 2), int(self.height / 2 - 2), 5,5 )
+        self.screen.fill(pygame.Color('red') if self.hitEnemy else pygame.Color('white'), sightRect)
+
+        self.drawMinimap()
 
 
-            
-
-
-width = 1000
+width = 500
 height = 500
 
 # Crear ventana de pygame
 pygame.init()
 
-screen = pygame.display.set_mode((width, height), pygame.DOUBLEBUF | pygame.HWACCEL) #Flags, configuraciones para que sea óptimo
+screen = pygame.display.set_mode((width,height), pygame.DOUBLEBUF | pygame.HWACCEL | pygame.HWSURFACE ) #Flags, configuraciones para que sea óptimo
 #Double buffering significa que pygame usa un segundo espacio de memoria, mientras el primer frame buffer se dibuja en pantalla
 # En si para que no se vea la reenderizacion en tiempo real
 
@@ -342,11 +343,11 @@ while isRunning:
                 if isPause:
                     if pauseSelect[0]:
                         if isPause:
-                            screen.fill(pygame.Color("gray"))#Fondo gris
-                            screen.fill(pygame.Color("saddlebrown"), (int(width / 2), 0,  int(width / 2), int(height / 2)))
+                            #screen.fill(pygame.Color("gray"))#Fondo gris
+                            screen.fill(pygame.Color("saddlebrown"), (0, 0, width, int(height / 2)))
 
             # Piso
-                            screen.fill(pygame.Color("dimgray"), (int(width / 2), int(height / 2),  int(width / 2), int(height / 2)))
+                            screen.fill(pygame.Color("dimgray"), (0, int(height / 2), width, int(height / 2)))
                             rCaster.render()
                         isPause = 0
                     elif pauseSelect[1]:
@@ -386,11 +387,11 @@ while isRunning:
             keys = pygame.key.get_pressed()  #checking pressed keys
             
             if first:
-                screen.fill(pygame.Color("gray"))#Fondo gris
-                screen.fill(pygame.Color("saddlebrown"), (int(width / 2), 0,  int(width / 2), int(height / 2)))
+                #screen.fill(pygame.Color("gray"))#Fondo gris
+                screen.fill(pygame.Color("saddlebrown"), (0, 0, width, int(height / 2)))
 
             # Piso
-                screen.fill(pygame.Color("dimgray"), (int(width / 2), int(height / 2),  int(width / 2), int(height / 2)))
+                screen.fill(pygame.Color("dimgray"), (0, int(height / 2), width, int(height / 2)))
                 rCaster.render()
                 first = False
 
@@ -430,13 +431,13 @@ while isRunning:
                 if rCaster.map[j][i] == ' ':
                     rCaster.player['x'] = newX
                     rCaster.player['y'] = newY
-                screen.fill(pygame.Color("gray"))#Fondo gris
+                #screen.fill(pygame.Color("gray"))#Fondo gris
 
 
-                screen.fill(pygame.Color("saddlebrown"), (int(width / 2), 0,  int(width / 2), int(height / 2)))
+                screen.fill(pygame.Color("saddlebrown"), (0, 0, width, int(height / 2)))
 
             # Piso
-                screen.fill(pygame.Color("dimgray"), (int(width / 2), int(height / 2),  int(width / 2), int(height / 2)))
+                screen.fill(pygame.Color("dimgray"), (0, int(height / 2), width, int(height / 2)))
                 rCaster.render()
             # Para dar el fps
             screen.fill(pygame.Color("black"), (0,0,30,30))#Cuadrito en la esquina de color negro
