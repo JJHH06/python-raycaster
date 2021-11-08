@@ -274,8 +274,8 @@ titleFont = pygame.font.SysFont("verdana", 40)
 
 
 #Fondo
-BackGround = Background('background.jpg', [0,0],(width, height))
-pauseBackground = Background('doom-pause.jpg', [0,0],(width, height))
+BackGround = Background('background.jpg', [0,0],(width*2, height))
+pauseBackground = Background('doom-pause.jpg', [0,0],(width*2, height))
 
 def updateFPS():
 
@@ -359,6 +359,7 @@ while isRunning:
     if not isMenu:
         
         if isPause:
+            screen = pygame.display.set_mode((width*2,height), pygame.DOUBLEBUF | pygame.HWACCEL | pygame.HWSURFACE )
             screen.fill([255, 255, 255])
             screen.blit(pauseBackground.image, BackGround.rect)
             screen.fill((100,100,100), (b1Pos[0],b1Pos[1],200,70))
@@ -387,6 +388,7 @@ while isRunning:
             keys = pygame.key.get_pressed()  #checking pressed keys
             
             if first:
+                screen = pygame.display.set_mode((width,height), pygame.DOUBLEBUF | pygame.HWACCEL | pygame.HWSURFACE ) #Flags, configuraciones para que sea óptimo
                 #screen.fill(pygame.Color("gray"))#Fondo gris
                 screen.fill(pygame.Color("saddlebrown"), (0, 0, width, int(height / 2)))
 
@@ -446,7 +448,7 @@ while isRunning:
             screen.blit(updateFPS(), (0,0))
 
     else:
-        
+        screen = pygame.display.set_mode((width*2,height), pygame.DOUBLEBUF | pygame.HWACCEL | pygame.HWSURFACE )
         screen.fill([255, 255, 255])
         screen.blit(BackGround.image, BackGround.rect)
         screen.fill((100,100,100), (b1Pos[0],b1Pos[1],200,70))
