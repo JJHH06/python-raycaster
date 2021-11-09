@@ -350,25 +350,40 @@ while isRunning:
                 isRunning = 0
             
             if ev.key == pygame.K_p:
-                if not isMenu:
+                if not isMenu and not isLevelSeletion:
+                    pygame.mixer.Channel(1).play(pygame.mixer.Sound('./music/menu_enter.mp3'))
                     isPause = not isPause
+                    if not isPause:
+                        screen = pygame.display.set_mode((width,height), pygame.DOUBLEBUF | pygame.HWACCEL | pygame.HWSURFACE )
+                            #screen.fill(pygame.Color("gray"))#Fondo gris
+                        screen.fill(pygame.Color("saddlebrown"), (0, 0, width, int(height / 2)))
+                        screen.fill(pygame.Color("dimgray"), (0, int(height / 2), width, int(height / 2)))
+                        rCaster.render()
 
             if ev.key == pygame.K_UP or ev.key == pygame.K_DOWN:
                 if isMenu:
+                    pygame.mixer.Channel(1).play(pygame.mixer.Sound('./music/menu_move.mp3'))
+                    
                     menuSelect = flipSelection(menuSelect)
                 if (not isMenu) and (isPause):
+                    pygame.mixer.Channel(1).play(pygame.mixer.Sound('./music/menu_move.mp3'))
+                    
                     pauseSelect = flipSelection(pauseSelect)
 
                 if isLevelSeletion:
                     if ev.key == pygame.K_UP:
+                        pygame.mixer.Channel(1).play(pygame.mixer.Sound('./music/menu_move.mp3'))
+                        
                         moveUp()
                     elif ev.key == pygame.K_DOWN:
+                        pygame.mixer.Channel(1).play(pygame.mixer.Sound('./music/menu_move.mp3'))
                         moveDown()
 
             
 
             if ev.key == pygame.K_RETURN:
                 if isMenu:
+                    pygame.mixer.Channel(1).play(pygame.mixer.Sound('./music/menu_enter.mp3'))
                     if menuSelect[0]:
                         isMenu = 0
                         isLevelSeletion = 1
@@ -377,7 +392,7 @@ while isRunning:
                         isRunning = 0
 
                 elif isLevelSeletion:
-                    pass
+                    pygame.mixer.Channel(1).play(pygame.mixer.Sound('./music/menu_enter.mp3'))
                     if levelSelection[0]:
                         enemies = [{"x" : 100,
                         "y" : 200,
@@ -416,13 +431,14 @@ while isRunning:
                     isLevelSeletion = 0
 
                 elif isPause:
+                    pygame.mixer.Channel(1).play(pygame.mixer.Sound('./music/menu_enter.mp3'))
                     if pauseSelect[0]:
                         
                         screen = pygame.display.set_mode((width,height), pygame.DOUBLEBUF | pygame.HWACCEL | pygame.HWSURFACE )
                             #screen.fill(pygame.Color("gray"))#Fondo gris
                         screen.fill(pygame.Color("saddlebrown"), (0, 0, width, int(height / 2)))
 
-            # Piso
+            # Pisos
                         screen.fill(pygame.Color("dimgray"), (0, int(height / 2), width, int(height / 2)))
                         rCaster.render()
                         isPause = 0
