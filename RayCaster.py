@@ -328,6 +328,8 @@ pauseSelect = [1, 0]
 
 flipSelection = lambda l: [not n for n in l]
 
+PAUSE_SONG =pygame.mixer.Sound('./music/pause.mp3')
+
 while isRunning:
     #Se revisan todos los eventos
 
@@ -354,6 +356,7 @@ while isRunning:
                     pygame.mixer.Channel(1).play(pygame.mixer.Sound('./music/menu_enter.mp3'))
                     isPause = not isPause
                     if not isPause:
+                        pygame.mixer.Channel(2).stop()
                         pygame.mixer.music.unpause()
 
                         screen = pygame.display.set_mode((width,height), pygame.DOUBLEBUF | pygame.HWACCEL | pygame.HWSURFACE )
@@ -363,6 +366,8 @@ while isRunning:
                         rCaster.render()
                     if isPause:
                         pygame.mixer.music.pause()
+                        pygame.mixer.Channel(2).play(PAUSE_SONG)
+                        pygame.mixer.Channel(2).set_volume(0.2)
 
             if ev.key == pygame.K_UP or ev.key == pygame.K_DOWN:
                 if isMenu:
@@ -463,6 +468,7 @@ while isRunning:
                 elif isPause:
                     pygame.mixer.Channel(1).play(pygame.mixer.Sound('./music/menu_enter.mp3'))
                     if pauseSelect[0]:
+                        pygame.mixer.Channel(2).stop()
                         pygame.mixer.music.unpause()
                         
                         screen = pygame.display.set_mode((width,height), pygame.DOUBLEBUF | pygame.HWACCEL | pygame.HWSURFACE )
@@ -474,6 +480,7 @@ while isRunning:
                         rCaster.render()
                         isPause = 0
                     elif pauseSelect[1]:
+                        pygame.mixer.Channel(2).stop()
                         pygame.mixer.music.stop()
                         isMenu = 1
                         isPause = 0
