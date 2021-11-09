@@ -76,7 +76,9 @@ class Raycaster(object):
         self.hitEnemy = False
 
     #Para cargar el mapa con el .txt
+    
     def load_map(self, filename):
+        self.map = []
         with open(filename) as file:
             for line in file.readlines():
                 self.map.append( list(line.rstrip()) )
@@ -292,11 +294,39 @@ isRunning = 1
 isMenu = 1
 isPause = 0
 first = 1
+isLevelSeletion = 0
+levelSelection = [1,0,0]
+
+#function to move the 1 of levelSelection up a selection 
+def moveDown():
+    if levelSelection[0] == 1:
+        levelSelection[0] = 0
+        levelSelection[1] = 1
+    elif levelSelection[1] == 1:
+        levelSelection[1] = 0
+        levelSelection[2] = 1
+    elif levelSelection[2] == 1:
+        levelSelection[2] = 0
+        levelSelection[0] = 1
+
+def moveUp():
+    if levelSelection[0] == 1:
+        levelSelection[0] = 0
+        levelSelection[2] = 1
+    elif levelSelection[1] == 1:
+        levelSelection[1] = 0
+        levelSelection[0] = 1
+    elif levelSelection[2] == 1:
+        levelSelection[2] = 0
+        levelSelection[1] = 1
+
 
 
 b1Pos=(400,250)
 
 b2Pos=(400,350)
+
+b3Pos=(400,450)
 
 menuSelect = [True, False]
 pauseSelect = [1, 0]
@@ -333,22 +363,43 @@ while isRunning:
                 if (not isMenu) and (isPause):
                     pauseSelect = flipSelection(pauseSelect)
 
+                if isLevelSeletion:
+                    if ev.key == pygame.K_UP:
+                        moveUp()
+                    elif ev.key == pygame.K_DOWN:
+                        moveDown()
+
+            
+
             if ev.key == pygame.K_RETURN:
                 if isMenu:
                     if menuSelect[0]:
                         isMenu = 0
+                        isLevelSeletion = 1
                         first = 1
                     elif menuSelect[1]:
                         isRunning = 0
-                if isPause:
+
+                elif isLevelSeletion:
+                    pass
+                    if levelSelection[0]:
+                        rCaster.load_map("map.txt")
+                    elif levelSelection[1]:
+                        rCaster.load_map("map1.txt")
+                    elif levelSelection[2]:
+                        rCaster.load_map("map1.txt")
+                    isLevelSeletion = 0
+
+                elif isPause:
                     if pauseSelect[0]:
-                        if isPause:
+                        
+                        screen = pygame.display.set_mode((width,height), pygame.DOUBLEBUF | pygame.HWACCEL | pygame.HWSURFACE )
                             #screen.fill(pygame.Color("gray"))#Fondo gris
-                            screen.fill(pygame.Color("saddlebrown"), (0, 0, width, int(height / 2)))
+                        screen.fill(pygame.Color("saddlebrown"), (0, 0, width, int(height / 2)))
 
             # Piso
-                            screen.fill(pygame.Color("dimgray"), (0, int(height / 2), width, int(height / 2)))
-                            rCaster.render()
+                        screen.fill(pygame.Color("dimgray"), (0, int(height / 2), width, int(height / 2)))
+                        rCaster.render()
                         isPause = 0
                     elif pauseSelect[1]:
                         isMenu = 1
@@ -356,7 +407,7 @@ while isRunning:
                         rCaster.player = {'x': 100,'y': 175,'fov': 60,'angle': 180}
 
 
-    if not isMenu:
+    if not isMenu and not isLevelSeletion:
         
         if isPause:
             screen = pygame.display.set_mode((width*2,height), pygame.DOUBLEBUF | pygame.HWACCEL | pygame.HWSURFACE )
@@ -447,7 +498,7 @@ while isRunning:
             #Dibujar objetos, texto o imagenes, en este caso los fps
             screen.blit(updateFPS(), (0,0))
 
-    else:
+    if isMenu:
         screen = pygame.display.set_mode((width*2,height), pygame.DOUBLEBUF | pygame.HWACCEL | pygame.HWSURFACE )
         screen.fill([255, 255, 255])
         screen.blit(BackGround.image, BackGround.rect)
@@ -470,6 +521,37 @@ while isRunning:
         screen.blit(titleFont.render("El raycaster en python", 1, pygame.Color("white")), (255,165))
         screen.blit(buttonFont.render("Jugar", 1, pygame.Color("black")), (455,265))
         screen.blit(buttonFont.render("Salir", 1, pygame.Color("black")), (455,365))
+
+    if isLevelSeletion:
+        screen = pygame.display.set_mode((width*2,height), pygame.DOUBLEBUF | pygame.HWACCEL | pygame.HWSURFACE )
+        screen.fill([255, 255, 255])
+        screen.blit(BackGround.image, BackGround.rect)
+        screen.fill((100,100,100), (b1Pos[0] -50,b1Pos[1] -50,200,70))
+        screen.fill((100,100,100), (b2Pos[0] -50,b2Pos[1] -50,200,70))
+        screen.fill((100,100,100), (b3Pos[0] -50,b3Pos[1] -50,200,70))
+
+        if levelSelection[0]:
+            screen.fill(pygame.Color("red"), (b1Pos[0]-50 +5,b1Pos[1]-50 + 5,200 -5*2,70 -5*2))
+
+        else:
+            screen.fill((245, 173, 66), (b1Pos[0]-50 +5,b1Pos[1]-50 + 5,200 -5*2,70 -5*2))
+
+
+        if levelSelection[1]:
+            screen.fill(pygame.Color("red"), (b2Pos[0]-50 +5,b2Pos[1]-50 + 5,200 -5*2,70 -5*2))
+        else:
+            screen.fill((245, 173, 66), (b2Pos[0]-50 +5,b2Pos[1]-50 + 5,200 -5*2,70 -5*2))
+
+        if levelSelection[2]:
+            screen.fill(pygame.Color("red"), (b3Pos[0]-50 +5,b3Pos[1]-50 + 5,200 -5*2,70 -5*2))
+        else:
+            screen.fill((245, 173, 66), (b3Pos[0]-50 +5,b3Pos[1]-50 + 5,200 -5*2,70 -5*2))
+
+        screen.blit(titleFont.render("Selecciona un nivel:", 1, pygame.Color("black")), (258,165-20))
+        screen.blit(titleFont.render("Selecciona un nivel:", 1, pygame.Color("white")), (255,165-20))
+        screen.blit(buttonFont.render("Nivel 1", 1, pygame.Color("black")), (455-50,265-50))
+        screen.blit(buttonFont.render("Nivel 2", 1, pygame.Color("black")), (455-50,365-50))
+        screen.blit(buttonFont.render("Nivel 3", 1, pygame.Color("black")), (455-50,465-50))
     
     # Valor maximo de los fps
     clock.tick(60)
