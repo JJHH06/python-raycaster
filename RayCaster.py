@@ -15,13 +15,7 @@ wallcolors = {
     '5': pygame.Color('purple')
     }
 
-wallTextures = {
-    '1': pygame.image.load('STONE3.png'),
-    '2': pygame.image.load('STONGARG.png'),
-    '3': pygame.image.load('BIGDOOR7.png'),
-    '4': pygame.image.load('MARBFAC2.png'),
-    '5': pygame.image.load('MARBFACE.png')
-    }
+
 
 # enemies = [{"x" : 100,
 #             "y" : 200,
@@ -63,8 +57,8 @@ class Raycaster(object):
         self.maxdistance = 300
 
         #Cuanto me muevo
-        self.stepSize = 5
-        self.turnSize = 5
+        self.stepSize = 60
+        self.turnSize = 30
 
         self.player = {
             'x': 100,
@@ -210,7 +204,7 @@ class Raycaster(object):
 
         #Generacio de rayos
         for column in range(RAY_AMOUNT):
-            angle = self.player['angle'] + (-(self.player['fov']/2)) + (self.player['fov']*column/RAY_AMOUNT)
+            angle = self.player['angle'] - ((self.player['fov']/2)) + (self.player['fov']*column/RAY_AMOUNT)
             dist, id, tx = self.castRay(angle)
 
             rayWidth = int(( 1 / RAY_AMOUNT) * self.width)
@@ -338,6 +332,8 @@ while isRunning:
     #Se revisan todos los eventos
 
     
+
+
     for ev in pygame.event.get():
 
         #Se revisa si hay un evento de tipo quit
@@ -385,22 +381,38 @@ while isRunning:
                     if levelSelection[0]:
                         enemies = [{"x" : 100,
                         "y" : 200,
-                        "sprite" : pygame.image.load('sprite2.png').convert()},
+                        "sprite" : pygame.image.load('./sprites/sprite2.png').convert()},
 
                         {"x" : 380,
                         "y" : 170,
-                        "sprite" : pygame.image.load('sprite1.png').convert()},
+                        "sprite" : pygame.image.load('./sprites/sprite1.png').convert()},
 
                         {"x" : 300,
                         "y" : 420,
-                        "sprite" : pygame.image.load('sprite4.png').convert()}
+                        "sprite" : pygame.image.load('./sprites/sprite4.png').convert()}
 
-    ]
+                        ]
                         rCaster.load_map("map.txt")
                     elif levelSelection[1]:
+                        enemies = [
+
+                        {"x" : 370,
+                        "y" : 280,
+                        "sprite" : pygame.image.load('./sprites/sprite2.png').convert()},
+                        {"x" : 280,
+                        "y" : 280,
+                        "sprite" : pygame.image.load('./sprites/sprite2.png').convert()},
+
+                        {"x" : 80,
+                        "y" : 400,
+                        "sprite" : pygame.image.load('./sprites/sprite1.png').convert()}
+
+                        ]
+                        
+                        
                         rCaster.load_map("map1.txt")
                     elif levelSelection[2]:
-                        rCaster.load_map("map1.txt")
+                        rCaster.load_map("map2.txt")
                     isLevelSeletion = 0
 
                 elif isPause:
@@ -417,7 +429,13 @@ while isRunning:
                     elif pauseSelect[1]:
                         isMenu = 1
                         isPause = 0
-                        rCaster.player = {'x': 100,'y': 175,'fov': 60,'angle': 180}
+                        rCaster.player = player = {
+                            'x': 100,
+                            'y': 100,
+                            'fov': 60,
+                            'angle': 0
+                            
+                        }
 
 
     if not isMenu and not isLevelSeletion:
@@ -453,6 +471,16 @@ while isRunning:
             
             if first:
                 screen = pygame.display.set_mode((width,height), pygame.DOUBLEBUF | pygame.HWACCEL | pygame.HWSURFACE ) #Flags, configuraciones para que sea óptimo
+                wallTextures = {
+                '1': pygame.image.load('./sprites/STONE3.png'),
+                '2': pygame.image.load('./sprites/STONGARG.png'),
+                '3': pygame.image.load('./sprites/BIGDOOR7.png'),
+                '4': pygame.image.load('./sprites/MARBFAC2.png'),
+                '5': pygame.image.load('./sprites/MARBFACE.png'),
+                '6': pygame.image.load('./sprites/wall6.png').convert(),
+                '7': pygame.image.load('./sprites/wall7.png').convert(),
+
+                }
                 #screen.fill(pygame.Color("gray"))#Fondo gris
                 screen.fill(pygame.Color("saddlebrown"), (0, 0, width, int(height / 2)))
 
@@ -466,30 +494,32 @@ while isRunning:
                 newY = rCaster.player['y']
                 forward = rCaster.player['angle']*pi/180
                 right = ((rCaster.player['angle']+90)*pi/180)
+
+                #calculate deltatime
                 
                         
                 if keys[pygame.K_w]:
-                    newX +=  cos(forward)*rCaster.stepSize
-                    newY +=  sin(forward)*rCaster.stepSize
+                    newX +=  cos(forward)*rCaster.stepSize*dt
+                    newY +=  sin(forward)*rCaster.stepSize*dt
 
                 elif keys[pygame.K_s]:
-                    newX -=  cos(forward)*rCaster.stepSize
-                    newY -=  sin(forward)*rCaster.stepSize
+                    newX -=  cos(forward)*rCaster.stepSize*dt
+                    newY -=  sin(forward)*rCaster.stepSize*dt
                             
                 if keys[pygame.K_a]:
-                    newX -=  cos(right)*rCaster.stepSize
-                    newY -=  sin(right)*rCaster.stepSize
+                    newX -=  cos(right)*rCaster.stepSize*dt
+                    newY -=  sin(right)*rCaster.stepSize*dt
 
                 elif keys[pygame.K_d]:
                             
-                    newX +=  cos(right)*rCaster.stepSize
-                    newY +=  sin(right)*rCaster.stepSize
+                    newX +=  cos(right)*rCaster.stepSize*dt
+                    newY +=  sin(right)*rCaster.stepSize*dt
 
                 if keys[pygame.K_q]:
-                    rCaster.player['angle'] -= rCaster.turnSize
+                    rCaster.player['angle'] -= rCaster.turnSize*dt
 
                 elif keys[pygame.K_e]:
-                    rCaster.player['angle'] += rCaster.turnSize
+                    rCaster.player['angle'] += rCaster.turnSize*dt
 
                 i = int(newX/rCaster.blocksize)
                 j = int(newY/rCaster.blocksize)
@@ -567,7 +597,7 @@ while isRunning:
         screen.blit(buttonFont.render("Nivel 3", 1, pygame.Color("black")), (455-50,465-50))
     
     # Valor maximo de los fps
-    clock.tick(60)
+    dt = clock.tick(90) / 1000.0
     
 
     pygame.display.flip()
