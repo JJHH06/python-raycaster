@@ -5,7 +5,7 @@ from math import cos, pi, sin, tan, atan2
 
 RAY_AMOUNT = 100
 
-SPRITE_BACKGROUND = (152, 0, 136, 255)
+SPRITE_BACKGROUND = (0, 1, 0, 255)
 
 wallcolors = {
     '1': pygame.Color('red'),
@@ -23,19 +23,19 @@ wallTextures = {
     '5': pygame.image.load('MARBFACE.png')
     }
 
-enemies = [{"x" : 100,
-            "y" : 200,
-            "sprite" : pygame.image.load('sprite1.png')},
+# enemies = [{"x" : 100,
+#             "y" : 200,
+#             "sprite" : pygame.image.load('sprite1.png').convert()},
 
-           {"x" : 350,
-            "y" : 150,
-            "sprite" : pygame.image.load('sprite2.png')},
+#            {"x" : 350,
+#             "y" : 150,
+#             "sprite" : pygame.image.load('sprite2.png').convert()},
 
-            {"x" : 300,
-             "y" : 400,
-             "sprite" : pygame.image.load('sprite3.png')}
+#             {"x" : 300,
+#              "y" : 400,
+#              "sprite" : pygame.image.load('sprite3.png').convert()}
 
-    ]
+#     ]
 
 class Background(pygame.sprite.Sprite):
     def __init__(self, image_file, location, size):
@@ -144,7 +144,7 @@ class Raycaster(object):
                     tx = int((x - startX) * obj['sprite'].get_width() / spriteWidth )
                     ty = int((y - startY) * obj['sprite'].get_height() / spriteHeight )
                     texColor = obj['sprite'].get_at((tx, ty))
-                    if texColor != SPRITE_BACKGROUND and texColor[3] > 128:
+                    if texColor[0] != SPRITE_BACKGROUND[0] and texColor[1] != SPRITE_BACKGROUND[1] and texColor[2] != SPRITE_BACKGROUND[2] and texColor[3] > 128:
                         self.screen.set_at((x,y), texColor)
                         if y == self.height / 2:
                             self.zbuffer[x] = spriteDist
@@ -383,6 +383,19 @@ while isRunning:
                 elif isLevelSeletion:
                     pass
                     if levelSelection[0]:
+                        enemies = [{"x" : 100,
+                        "y" : 200,
+                        "sprite" : pygame.image.load('sprite2.png').convert()},
+
+                        {"x" : 380,
+                        "y" : 170,
+                        "sprite" : pygame.image.load('sprite1.png').convert()},
+
+                        {"x" : 300,
+                        "y" : 420,
+                        "sprite" : pygame.image.load('sprite4.png').convert()}
+
+    ]
                         rCaster.load_map("map.txt")
                     elif levelSelection[1]:
                         rCaster.load_map("map1.txt")
