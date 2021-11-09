@@ -399,7 +399,7 @@ while isRunning:
                     pygame.mixer.Channel(1).play(pygame.mixer.Sound('./music/menu_enter.mp3'))
                     if levelSelection[0]:
                         pygame.mixer.music.load('./music/level_1.mp3')
-                        pygame.mixer.music.set_volume(.5)
+                        pygame.mixer.music.set_volume(0.4)
                         pygame.mixer.music.play(-1)
                         enemies = [{"x" : 100,
                         "y" : 200,
@@ -416,6 +416,10 @@ while isRunning:
                         ]
                         rCaster.load_map("map.txt")
                     elif levelSelection[1]:
+                        pygame.mixer.music.load('./music/level_2.mp3')
+                        pygame.mixer.music.set_volume(0.2)
+                        pygame.mixer.music.play(-1)
+
                         enemies = [
 
                         {"x" : 370,
@@ -435,7 +439,9 @@ while isRunning:
                         rCaster.load_map("map1.txt")
                     elif levelSelection[2]:
                         #pygame square color 
-
+                        pygame.mixer.music.load('./music/level_3.mp3')
+                        pygame.mixer.music.set_volume(0.8)
+                        pygame.mixer.music.play(-1)
 
                         enemies = [
 
