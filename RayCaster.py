@@ -58,7 +58,7 @@ class Raycaster(object):
 
         #Cuanto me muevo
         self.stepSize = 60
-        self.turnSize = 30
+        self.turnSize = 48
 
         self.player = {
             'x': 100,
@@ -354,11 +354,15 @@ while isRunning:
                     pygame.mixer.Channel(1).play(pygame.mixer.Sound('./music/menu_enter.mp3'))
                     isPause = not isPause
                     if not isPause:
+                        pygame.mixer.music.unpause()
+
                         screen = pygame.display.set_mode((width,height), pygame.DOUBLEBUF | pygame.HWACCEL | pygame.HWSURFACE )
                             #screen.fill(pygame.Color("gray"))#Fondo gris
-                        screen.fill(pygame.Color("saddlebrown"), (0, 0, width, int(height / 2)))
-                        screen.fill(pygame.Color("dimgray"), (0, int(height / 2), width, int(height / 2)))
+                        screen.fill(pygame.Color((0, 153, 153)), (0, 0, width, int(height / 2)))
+                        screen.fill(pygame.Color((93, 93, 93)), (0, int(height / 2), width, int(height / 2)))
                         rCaster.render()
+                    if isPause:
+                        pygame.mixer.music.pause()
 
             if ev.key == pygame.K_UP or ev.key == pygame.K_DOWN:
                 if isMenu:
@@ -394,6 +398,9 @@ while isRunning:
                 elif isLevelSeletion:
                     pygame.mixer.Channel(1).play(pygame.mixer.Sound('./music/menu_enter.mp3'))
                     if levelSelection[0]:
+                        pygame.mixer.music.load('./music/level_1.mp3')
+                        pygame.mixer.music.set_volume(.5)
+                        pygame.mixer.music.play(-1)
                         enemies = [{"x" : 100,
                         "y" : 200,
                         "sprite" : pygame.image.load('./sprites/sprite2.png').convert()},
@@ -427,22 +434,41 @@ while isRunning:
                         
                         rCaster.load_map("map1.txt")
                     elif levelSelection[2]:
+                        #pygame square color 
+
+
+                        enemies = [
+
+                        {"x" : 80,
+                        "y" : 370,
+                        "sprite" : pygame.image.load('./sprites/sprite4.png').convert()},
+                        {"x" : 350,
+                        "y" : 130,
+                        "sprite" : pygame.image.load('./sprites/sprite4.png').convert()},
+
+                        {"x" : 370,
+                        "y" : 400,
+                        "sprite" : pygame.image.load('./sprites/sprite4.png').convert()}
+
+                        ]
                         rCaster.load_map("map2.txt")
                     isLevelSeletion = 0
 
                 elif isPause:
                     pygame.mixer.Channel(1).play(pygame.mixer.Sound('./music/menu_enter.mp3'))
                     if pauseSelect[0]:
+                        pygame.mixer.music.unpause()
                         
                         screen = pygame.display.set_mode((width,height), pygame.DOUBLEBUF | pygame.HWACCEL | pygame.HWSURFACE )
                             #screen.fill(pygame.Color("gray"))#Fondo gris
-                        screen.fill(pygame.Color("saddlebrown"), (0, 0, width, int(height / 2)))
+                        screen.fill(pygame.Color((0, 153, 153)), (0, 0, width, int(height / 2)))
 
             # Pisos
-                        screen.fill(pygame.Color("dimgray"), (0, int(height / 2), width, int(height / 2)))
+                        screen.fill(pygame.Color((93, 93, 93)), (0, int(height / 2), width, int(height / 2)))
                         rCaster.render()
                         isPause = 0
                     elif pauseSelect[1]:
+                        pygame.mixer.music.stop()
                         isMenu = 1
                         isPause = 0
                         rCaster.player = player = {
@@ -498,10 +524,10 @@ while isRunning:
 
                 }
                 #screen.fill(pygame.Color("gray"))#Fondo gris
-                screen.fill(pygame.Color("saddlebrown"), (0, 0, width, int(height / 2)))
+                screen.fill(pygame.Color((0, 153, 153)), (0, 0, width, int(height / 2)))
 
             # Piso
-                screen.fill(pygame.Color("dimgray"), (0, int(height / 2), width, int(height / 2)))
+                screen.fill(pygame.Color((93, 93, 93)), (0, int(height / 2), width, int(height / 2)))
                 rCaster.render()
                 first = False
 
@@ -546,10 +572,10 @@ while isRunning:
                 #screen.fill(pygame.Color("gray"))#Fondo gris
 
 
-                screen.fill(pygame.Color("saddlebrown"), (0, 0, width, int(height / 2)))
+                screen.fill(pygame.Color((0, 153, 153)), (0, 0, width, int(height / 2)))
 
             # Piso
-                screen.fill(pygame.Color("dimgray"), (0, int(height / 2), width, int(height / 2)))
+                screen.fill(pygame.Color((93, 93, 93)), (0, int(height / 2), width, int(height / 2)))
                 rCaster.render()
             # Para dar el fps
             screen.fill(pygame.Color("black"), (0,0,30,30))#Cuadrito en la esquina de color negro
