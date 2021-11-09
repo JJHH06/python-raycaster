@@ -340,10 +340,17 @@ while isRunning:
 
         #Se revisa si hay un evento de tipo quit
         #Se activa si apachamos x arriba o si le hacemos un binding a otro boton
+        
 
         if ev.type == pygame.QUIT:
             isRunning = 0
-
+        
+        if ev.type == pygame.MOUSEBUTTONDOWN:
+                print(isMenu, isLevelSeletion, isPause)
+                if not isMenu and not isLevelSeletion and not isPause:
+                    pygame.mixer.Channel(4).play(pygame.mixer.Sound('./music/shot.mp3'))
+                    if rCaster.hitEnemy:
+                        pygame.mixer.Channel(3).play(pygame.mixer.Sound('./music/hit.mp3'))
         #Si la tecla esta en hold
         elif ev.type == pygame.KEYDOWN:
 
